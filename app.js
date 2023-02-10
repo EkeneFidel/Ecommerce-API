@@ -3,7 +3,8 @@ const bodyParser = require("body-parser");
 
 // custom imports
 const db = require("./config/db.config");
-const authRouter = require("./routes/auth.route");
+const authRouter = require("./routes/auth.routes");
+const userRouter = require("./routes/user.routes");
 
 db.connectToMongoDB();
 require("dotenv").config();
@@ -15,6 +16,7 @@ const app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
+app.use("/api/v1/user", userRouter);
 app.use("/api/v1/auth", authRouter);
 app.get("/api/v1/", (req, res) => {
     res.send("Ecom Api Sweet!");

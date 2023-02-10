@@ -21,9 +21,28 @@ const userSchema = new Schema(
             required: true,
             unique: true,
         },
+        address: {
+            type: String,
+        },
         password: {
             type: String,
             required: true,
+        },
+        isVerified: {
+            type: Boolean,
+            default: false,
+        },
+        googleId: {
+            type: String,
+        },
+        provider: {
+            type: String,
+            required: true,
+        },
+        role: {
+            type: String,
+            default: "user",
+            enum: ["user", "admin"],
         },
     },
     { timestamps: true }
@@ -44,23 +63,5 @@ userSchema.methods.isValidPassword = async function (password) {
     return compare;
 };
 
-const validateUser = Joi.object()
-    .keys({
-        password: Joi.string().pattern(new RegExp("^[a-zA-Z0-9]{3,30}$")),
-        confirmPassword: Joi.any()
-            .equal(Joi.ref("password"))
-            .label("Confirm Password")
-            .messages({
-                "any.only": "Confirm Password does not match Password",
-            }),
-        firstname: Joi.string().required().label("First Name"),
-        lastname: Joi.string().required().label("Last name"),
-        email: Joi.string().email({
-            minDomainSegments: 2,
-            tlds: { allow: ["com", "net"] },
-        }),
-    })
-    .with("password", "confirmPassword");
-
-const userModel = mongoose.model("Users", userSchema);
-module.exports = { userModel, validateUser };
+const userModel = mongoose.model("User", userSchema);
+module.exports = userModel;

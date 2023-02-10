@@ -5,17 +5,17 @@ const {
     loginStrategy,
     signupStrategy,
 } = require("../strategies/auth.strategies");
-const { validateUser } = require("../models/user.model");
+const { createUserValidator } = require("../validators/user.validator");
 
 passport.use(jwtStrategy);
 
 passport.use("signup", signupStrategy);
 passport.use("login", loginStrategy);
 
-const validateUserMiddleWare = async (req, res, next) => {
+const validateCreateUserMiddleWare = async (req, res, next) => {
     const userPayload = req.body;
     try {
-        await validateUser.validateAsync(userPayload);
+        await createUserValidator.validateAsync(userPayload);
         next();
     } catch (error) {
         return res.status(400).json({
@@ -25,4 +25,4 @@ const validateUserMiddleWare = async (req, res, next) => {
     }
 };
 
-module.exports = { validateUserMiddleWare };
+module.exports = { validateCreateUserMiddleWare };
