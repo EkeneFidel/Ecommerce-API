@@ -37,7 +37,7 @@ const userSchema = new Schema(
         },
         provider: {
             type: String,
-            required: true,
+            required: false,
         },
         role: {
             type: String,

@@ -34,16 +34,17 @@ const signupStrategy = new LocalStrategy(
         try {
             const findUser = await userModel.findOne({ email });
             if (!findUser) {
+                req.body["provider"] = "email";
                 const user = await userModel.create(req.body);
                 return done(null, {
-                    message: "User signup successful!",
+                    message: "User signup successful",
                     success: true,
                     status: 200,
                     user: user,
                 });
             } else {
                 done(null, {
-                    message: "User already exists!",
+                    message: "User already exists",
                     success: false,
                     status: 400,
                 });

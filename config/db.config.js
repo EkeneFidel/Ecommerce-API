@@ -1,9 +1,12 @@
 const mongoose = require("mongoose");
-require('dotenv').config();
+require("dotenv").config();
 
 function connectToMongoDB() {
-    mongoose.set('strictQuery', true);
-    mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true });
+    mongoose.set("strictQuery", true);
+    mongoose.connect(process.env.MONGO_URI, {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+    });
     db = mongoose.connection;
 
     db.on("connected", () => {
@@ -15,4 +18,4 @@ function connectToMongoDB() {
     });
 }
 
-module.exports = { connectToMongoDB }
+module.exports = { connectToMongoDB };

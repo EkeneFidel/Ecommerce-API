@@ -8,8 +8,8 @@ const Schema = mongoose.Schema;
 // Define product schema
 const productSchema = new Schema(
     {
-        firstname: {
-            title: String,
+        title: {
+            type: String,
             required: true,
             trim: true,
         },
@@ -28,11 +28,16 @@ const productSchema = new Schema(
             required: true,
         },
         category: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Category",
+            type: String,
+            required: true,
+        },
+        brand: {
+            type: String,
+            required: true,
         },
         quantity: {
             type: Number,
+            required: true,
         },
         ratings: {
             star: Number,
@@ -42,5 +47,5 @@ const productSchema = new Schema(
     { timestamps: true }
 );
 
-const productModel = mongoose.model("Product", userSchema);
+const productModel = mongoose.model("Product", productSchema);
 module.exports = productModel;
