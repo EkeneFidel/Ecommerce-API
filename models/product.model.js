@@ -28,21 +28,24 @@ const productSchema = new Schema(
             required: true,
         },
         category: {
-            type: String,
-            required: true,
+            type: Schema.Types.ObjectId,
+            ref: "Category",
         },
         brand: {
-            type: String,
-            required: true,
+            type: Schema.Types.ObjectId,
+            ref: "Brand",
         },
+        images: [],
         quantity: {
             type: Number,
             required: true,
         },
-        ratings: {
-            star: Number,
-            postedby: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-        },
+        ratings: [
+            {
+                star: Number,
+                postedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+            },
+        ],
     },
     { timestamps: true }
 );

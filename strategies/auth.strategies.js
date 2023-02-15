@@ -62,15 +62,60 @@ const loginStrategy = new LocalStrategy(
             const user = await userModel.findOne({ email });
 
             if (!user) {
-                return done(null, false, { message: "User not found" });
+                return done(null, false, {
+                    message: "User not found",
+                    status: 401,
+                });
             }
             const validate = await user.isValidPassword(password);
 
             if (!validate) {
-                return done(null, false, { message: "Password Incorrect" });
+                return done(null, false, {
+                    message: "Password Incorrect",
+                    status: 401,
+                });
             }
 
-            return done(null, user, { message: "Logged in successfully" });
+            return done(null, user, {
+                message: "Logged in successfully",
+                status: 200,
+            });
+        } catch (error) {
+            return done(error);
+        }
+    }
+);
+
+const adminLoginStrategy = new LocalStrategy(
+    payload,
+    async (req, email, password, done) => {
+        try {
+            const user = await userModel.findOne({ email });
+            if (user.role !== "admin") {
+                return done(null, false, {
+                    message: "Not authorized",
+                    status: 401,
+                });
+            }
+            if (!user) {
+                return done(null, false, {
+                    message: "User not found",
+                    status: 401,
+                });
+            }
+            const validate = await user.isValidPassword(password);
+
+            if (!validate) {
+                return done(null, false, {
+                    message: "Password Incorrect",
+                    status: 401,
+                });
+            }
+
+            return done(null, user, {
+                message: "Logged in successfully",
+                status: 200,
+            });
         } catch (error) {
             return done(error);
         }
@@ -81,4 +126,5 @@ module.exports = {
     signupStrategy,
     loginStrategy,
     jwtStrategy,
+    adminLoginStrategy,
 };

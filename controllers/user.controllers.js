@@ -2,7 +2,7 @@ const userModel = require("../models/user.model");
 
 const getAllUsers = async (req, res, next) => {
     try {
-        const users = await userModel.find();
+        const users = await userModel.find().select(["-__v", "-password"]);
 
         return res.status(200).json({
             success: true,
@@ -19,7 +19,7 @@ const getAllUsers = async (req, res, next) => {
 const getUser = async (req, res, next) => {
     try {
         const id = req.params.id;
-        const user = await userModel.findById(id);
+        const user = await userModel.findById(id).select(["-__v", "-password"]);
 
         return res.status(200).json({
             success: true,
@@ -40,11 +40,9 @@ const updateUser = async (req, res, next) => {
         const user = await userModel.findById(id);
 
         if (user) {
-            const updatedUser = await userModel.findByIdAndUpdate(
-                id,
-                userData,
-                { new: true }
-            );
+            const updatedUser = await userModel
+                .findByIdAndUpdate(id, userData, { new: true })
+                .select(["-__v", "-password"]);
             return res.status(200).json({
                 success: true,
                 message: "User updated successfully",
@@ -70,7 +68,9 @@ const deleteUser = async (req, res, next) => {
         const user = await userModel.findById(id);
 
         if (user) {
-            const deletedUser = await userModel.findByIdAndDelete(id);
+            const deletedUser = await userModel
+                .findByIdAndDelete(id)
+                .select(["-__v", "-password"]);
             return res.status(200).json({
                 success: true,
                 message: "User deleted successfully",
@@ -90,9 +90,51 @@ const deleteUser = async (req, res, next) => {
     }
 };
 
+const changePassword = async (req, res, next) => {
+    try {
+        const id = req.user._id;
+        let user = await userModel.findById(id);
+        const { oldPassword, newPassword } = req.body;
+
+        if (!user) {
+            return res.status(400).json({
+                success: false,
+                message: "User not found",
+            });
+        }
+        const validate = await user.isValidPassword(oldPassword);
+        if (!validate) {
+            return res.status(400).json({
+                success: false,
+                message: "Old password is incorrect",
+            });
+        }
+        if (newPassword) {
+            user.password = newPassword;
+            const updatedPassword = await user.save();
+            return res.status(200).json({
+                success: true,
+                message: "Password updated",
+                user: updatedPassword,
+            });
+        } else {
+            return res.status(400).json({
+                success: false,
+                message: "New password not provided",
+            });
+        }
+    } catch (error) {
+        return res.status(400).json({
+            success: false,
+            message: error.message,
+        });
+    }
+};
+
 module.exports = {
     getAllUsers,
     getUser,
     deleteUser,
     updateUser,
+    changePassword,
 };

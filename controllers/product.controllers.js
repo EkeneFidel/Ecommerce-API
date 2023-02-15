@@ -1,12 +1,14 @@
 const slugify = require("slugify");
+const fs = require("fs");
 const productModel = require("../models/product.model");
+const cloudinaryUploadImg = require("../utils/cloudinary.utils");
 
 const addProduct = async (req, res, next) => {
     try {
         if (req.body.title) {
             req.body.slug = slugify(req.body.title);
         }
-        const newProduct = await productModel.create(req.body);
+        const newProduct = await productModel.create(req.body).select(["-__v"]);
         return res.status(200).json({
             message: "Product added",
             success: true,
@@ -23,7 +25,7 @@ const addProduct = async (req, res, next) => {
 const getProduct = async (req, res, next) => {
     try {
         const id = req.params.id;
-        const product = await productModel.findById(id);
+        const product = await productModel.findById(id).select(["-__v"]);
 
         return res.status(200).json({
             success: true,
@@ -39,13 +41,9 @@ const getProduct = async (req, res, next) => {
 
 const getAllProduct = async (req, res, next) => {
     try {
-        const queryObj = { ...req.query };
         const findQuery = {};
         const sortQuery = {};
         const { brand, category, price, sort_by, page, per_page } = req.query;
-        const exclude_fields = ["page", "per_page", "price"];
-        exclude_fields.forEach((el) => delete queryObj[el]);
-        console.log(queryObj);
 
         if (brand) {
             findQuery.brand = brand;
@@ -72,10 +70,22 @@ const getAllProduct = async (req, res, next) => {
             }
         }
 
+        const skip = (page - 1) * per_page;
+
+        if (req.query.page) {
+            const prodCount = await productModel.countDocuments();
+            if (skip >= prodCount)
+                return res.status(400).json({
+                    success: false,
+                    message: "This page does not exist",
+                });
+        }
+
         const products = await productModel
             .find(findQuery)
             .sort(sortQuery)
-            .skip(page)
+            .skip(skip)
+            .select(["-__v"])
             .limit(per_page);
 
         return res.status(200).json({
@@ -98,11 +108,9 @@ const updateProduct = async (req, res, next) => {
         }
         const productData = req.body;
 
-        const updatedUser = await productModel.findByIdAndUpdate(
-            id,
-            productData,
-            { new: true }
-        );
+        const updatedUser = await productModel
+            .findByIdAndUpdate(id, productData, { new: true })
+            .select(["-__v"]);
         return res.status(200).json({
             success: true,
             message: "Product updated successfully",
@@ -119,11 +127,47 @@ const updateProduct = async (req, res, next) => {
 const deleteProduct = async (req, res, next) => {
     try {
         const id = req.params.id;
-        const deletedProduct = await productModel.findByIdAndDelete(id);
+        const deletedProduct = await productModel
+            .findByIdAndDelete(id)
+            .select(["-__v"]);
 
         return res.status(200).json({
             success: true,
             product: deletedProduct,
+        });
+    } catch (error) {
+        return res.status(400).json({
+            success: false,
+            message: error.message,
+        });
+    }
+};
+
+const uploadImages = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const uploader = (path) => cloudinaryUploadImg(path, "images");
+        const urls = [];
+        const files = req.files;
+        for (const file of files) {
+            const { path } = file;
+            const newpath = await uploader(path);
+            urls.push(newpath);
+            fs.unlinkSync(path);
+        }
+
+        const findProduct = await productModel.findByIdAndUpdate(
+            id,
+            {
+                images: urls.map((file) => {
+                    return file;
+                }),
+            },
+            { new: true }
+        );
+        return res.status(200).json({
+            success: true,
+            product: findProduct,
         });
     } catch (error) {
         return res.status(400).json({
@@ -139,4 +183,5 @@ module.exports = {
     getAllProduct,
     updateProduct,
     deleteProduct,
+    uploadImages,
 };

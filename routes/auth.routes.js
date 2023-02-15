@@ -8,11 +8,13 @@ const {
 const {
     signupController,
     loginController,
+    adminLoginController,
 } = require("../controllers/auth.controllers");
 
 const authRouter = express.Router();
 
 authRouter.post("/login", loginController);
+authRouter.post("/admin-login", adminLoginController);
 
 authRouter.post(
     "/signup",
