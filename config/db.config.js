@@ -14,7 +14,7 @@ function connectToMongoDB() {
     });
 
     db.on("error", (err) => {
-        console.log("An error occured while connecting to the database", err);
+        console.log("An error occured while connecting to the database");
     });
 }
 

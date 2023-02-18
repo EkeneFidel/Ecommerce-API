@@ -6,7 +6,10 @@ const morgan = require("morgan");
 const db = require("./config/db.config");
 const authRouter = require("./routes/auth.routes");
 const userRouter = require("./routes/user.routes");
+const brandRouter = require("./routes/brand.routes");
+const categoryRouter = require("./routes/category.routes");
 const productRouter = require("./routes/product.routes");
+const cartRouter = require("./routes/cart.routes");
 
 db.connectToMongoDB();
 require("dotenv").config();
@@ -20,8 +23,11 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
 app.use("/api/v1/auth", authRouter);
-app.use("/api/v1/user", userRouter);
-app.use("/api/v1/product", productRouter);
+app.use("/api/v1/users", userRouter);
+app.use("/api/v1/brands", brandRouter);
+app.use("/api/v1/categories", categoryRouter);
+app.use("/api/v1/products", productRouter);
+app.use("/api/v1/cart", cartRouter);
 app.get("/api/v1/", (req, res) => {
     res.send("Ecom Api Sweet!");
 });

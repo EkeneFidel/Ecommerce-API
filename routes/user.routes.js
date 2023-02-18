@@ -14,7 +14,7 @@ const {
 
 const userRouter = express.Router();
 
-userRouter.get("/all-users", getAllUsers);
+userRouter.get("/", getAllUsers);
 userRouter.get("/:id", getUser);
 userRouter.put("/:id", validateUpdateUserMiddleWare, updateUser);
 userRouter.delete("/:id", deleteUser);

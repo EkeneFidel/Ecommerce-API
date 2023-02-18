@@ -11,13 +11,13 @@ const categorySchema = new Schema({
         type: String,
         required: true,
         trim: true,
+        unique: true,
     },
     brands: [
         {
-            brand: {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: "brand",
-            },
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "brand",
+            unique: true,
         },
     ],
 });

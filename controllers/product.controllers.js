@@ -8,7 +8,7 @@ const addProduct = async (req, res, next) => {
         if (req.body.title) {
             req.body.slug = slugify(req.body.title);
         }
-        const newProduct = await productModel.create(req.body).select(["-__v"]);
+        const newProduct = await productModel.create(req.body);
         return res.status(200).json({
             message: "Product added",
             success: true,
@@ -108,13 +108,13 @@ const updateProduct = async (req, res, next) => {
         }
         const productData = req.body;
 
-        const updatedUser = await productModel
+        const updatedProduct = await productModel
             .findByIdAndUpdate(id, productData, { new: true })
             .select(["-__v"]);
         return res.status(200).json({
             success: true,
             message: "Product updated successfully",
-            user: updatedUser,
+            product: updatedProduct,
         });
     } catch (error) {
         return res.status(400).json({
