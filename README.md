@@ -10,7 +10,7 @@ https://ecommerce-api-tan.vercel.app/
 
 ### Setup
 
-Install NodeJS, mongodb
+Install NodeJS, mongodb  
 Create cloudinary account
 
 ```console
