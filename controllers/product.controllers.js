@@ -1,6 +1,8 @@
 const slugify = require("slugify");
 const fs = require("fs");
 const productModel = require("../models/product.model");
+const brandModel = require("../models/brand.model");
+const categoryModel = require("../models/category.model");
 const cloudinaryUploadImg = require("../utils/cloudinary.utils");
 
 const addProduct = async (req, res, next) => {
@@ -46,10 +48,14 @@ const getAllProduct = async (req, res, next) => {
         const { brand, category, price, sort_by, page, per_page } = req.query;
 
         if (brand) {
-            findQuery.brand = brand;
+            const brandItem = await brandModel.findOne({ title: brand });
+            findQuery.brand = brandItem._id.toString();
         }
         if (category) {
-            findQuery.category = category;
+            const categoryItem = await categoryModel.findOne({
+                title: category,
+            });
+            findQuery.category = categoryItem._id.toString();
         }
         if (price) {
             var arr = price.split("-");
@@ -81,6 +87,7 @@ const getAllProduct = async (req, res, next) => {
                 });
         }
 
+        console.log(findQuery);
         const products = await productModel
             .find(findQuery)
             .sort(sortQuery)

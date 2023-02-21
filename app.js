@@ -10,6 +10,7 @@ const brandRouter = require("./routes/brand.routes");
 const categoryRouter = require("./routes/category.routes");
 const productRouter = require("./routes/product.routes");
 const cartRouter = require("./routes/cart.routes");
+const orderRouter = require("./routes/order.routes");
 
 db.connectToMongoDB();
 require("dotenv").config();
@@ -28,6 +29,7 @@ app.use("/api/v1/brands", brandRouter);
 app.use("/api/v1/categories", categoryRouter);
 app.use("/api/v1/products", productRouter);
 app.use("/api/v1/cart", cartRouter);
+app.use("/api/v1/order", orderRouter);
 app.get("/api/v1/", (req, res) => {
     res.send("Ecom Api Sweet!");
 });
@@ -39,6 +41,7 @@ app.get("/", (req, res) => {
 app.use(function (err, req, res, next) {
     res.status(err.status || 500);
     res.json({ message: err.message });
+    next();
 });
 
 app.listen(PORT, () => {

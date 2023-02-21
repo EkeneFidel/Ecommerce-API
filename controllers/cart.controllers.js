@@ -9,69 +9,75 @@ const addItemstoCart = async (req, res, next) => {
         // first check if user has a cart
         const cartExists = await cartModel.findOne({ orderBy: user._id });
         const product = await productModel.findById({ _id: productId });
-
-        // If product is already in cart, check if product is in cart
-        let newItem = {};
-        let finalCart = {};
-        if (cartExists) {
-            const indexFound = cartExists.cartItems.findIndex(
-                (item) => item.product.toString() === productId
-            );
-            // if product is in cart, calculate qty, price, total qty and total price
-            if (indexFound !== -1) {
-                cartExists.cartItems[indexFound].quantity += quantity;
-                cartExists.cartItems[indexFound].price +=
-                    product.price * quantity;
-                cartExists.totalPrice = cartExists.cartItems.reduce(
-                    (acc, n) => {
-                        return acc + n.price;
-                    },
-                    0
+        if (!product) {
+            return res.status(400).json({
+                message: "Product not found",
+                success: true,
+            });
+        } else {
+            // If product is already in cart, check if product is in cart
+            let newItem = {};
+            let finalCart = {};
+            if (cartExists) {
+                const indexFound = cartExists.cartItems.findIndex(
+                    (item) => item.product.toString() === productId
                 );
-                cartExists.totalQuantity = cartExists.cartItems.reduce(
-                    (acc, n) => {
-                        return acc + n.quantity;
-                    },
-                    0
-                );
-                // if product is not in cart append to cart items
+                // if product is in cart, calculate qty, price, total qty and total price
+                if (indexFound !== -1) {
+                    cartExists.cartItems[indexFound].quantity += quantity;
+                    cartExists.cartItems[indexFound].price +=
+                        product.price * quantity;
+                    cartExists.totalPrice = cartExists.cartItems.reduce(
+                        (acc, n) => {
+                            return acc + n.price;
+                        },
+                        0
+                    );
+                    cartExists.totalQuantity = cartExists.cartItems.reduce(
+                        (acc, n) => {
+                            return acc + n.quantity;
+                        },
+                        0
+                    );
+                    // if product is not in cart append to cart items
+                } else {
+                    newItem = {
+                        product: productId,
+                        quantity: quantity,
+                        price: product.price * quantity,
+                    };
+                    cartExists.totalPrice += newItem.price;
+                    cartExists.totalQuantity += newItem.quantity;
+                    cartExists.cartItems.push(newItem);
+                }
+                finalCart = await (
+                    await cartExists.save()
+                ).populate("cartItems.product", "_id title price");
             } else {
+                // if user does not have a cart, create one with cart item
                 newItem = {
                     product: productId,
                     quantity: quantity,
                     price: product.price * quantity,
                 };
-                cartExists.totalPrice += newItem.price;
-                cartExists.totalQuantity += newItem.quantity;
-                cartExists.cartItems.push(newItem);
+                let cartObj = {
+                    cartItems: [newItem],
+                    totalQuantity: newItem.quantity,
+                    totalPrice: newItem.price,
+                    orderBy: user._id,
+                };
+                finalCart = await cartModel.create(cartObj);
+                finalCart = await finalCart.populate(
+                    "cartItems.product",
+                    "_id title price"
+                );
             }
-            finalCart = await (
-                await cartExists.save()
-            ).populate("cartItems.product", "_id title price");
-        } else {
-            // if user does not have a cart, create one with cart item
-            newItem = {
-                product: productId,
-                quantity: quantity,
-                price: product.price * quantity,
-            };
-            let cartObj = {
-                cartItems: [newItem],
-                totalQuantity: newItem.quantity,
-                totalPrice: newItem.price,
-                orderBy: user._id,
-            };
-            finalCart = await cartModel.create(cartObj);
-            finalCart = await finalCart.populate(
-                "cartItems.product",
-                "_id title price"
-            );
-        }
 
-        return res.status(200).json({
-            success: true,
-            cart: finalCart,
-        });
+            return res.status(200).json({
+                success: true,
+                cart: finalCart,
+            });
+        }
     } catch (error) {
         return res.status(400).json({
             message: error.message,
@@ -82,13 +88,13 @@ const addItemstoCart = async (req, res, next) => {
 
 const getCart = async (req, res, next) => {
     try {
-        const user_id = req.user._id;
+        const userId = req.user._id;
 
-        const cart = await cartModel.findOne({ orderBy: user_id });
+        const cart = await cartModel.findOne({ orderBy: userId });
         if (!cart) {
-            return res.status(200).json({
+            return res.json({
                 success: true,
-                message: "User does not have a cart",
+                cart: null,
             });
         } else {
             return res.status(200).json({
